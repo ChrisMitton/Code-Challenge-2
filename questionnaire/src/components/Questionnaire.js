@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import axios from 'axios';
 
 const Questionnaire = () => {
   const [fullName, setFullName] = useState("");
@@ -8,9 +9,23 @@ const Questionnaire = () => {
   const [hopefullness, setHopefullness] = useState();
   const [hoursSlept, setHours] = useState();
 
+  const port = 4000;
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    await axios.post(`http://localhost:${port}/api/responses`, {
+        fullName,
+        dateOfBirth,
+        happiness,
+        energy,
+        hopefullness,
+        hoursSlept
+    });
+  }
+
   return (
     <div>
-      <form>
+      <form onSubmit={handleSubmit}>
         <div>
           <label>Enter your full name: </label>
           <input type="text" value={fullName} onChange={(e) => setFullName(e.target.value)} />
@@ -35,6 +50,9 @@ const Questionnaire = () => {
           <label>How many hours have you slept last night? </label>
           <input type="number" value={hoursSlept} onChange={(e) => setHours(e.target.value)} />
         </div>
+
+        <button type="submit">Submit</button>
+
       </form>
     </div>
   );
