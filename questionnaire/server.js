@@ -1,14 +1,25 @@
 const express = require('express');
-const app = express();
-const fs = require('fs')
+const fs = require('fs');
 const bodyParser = require('body-parser');
 const cors = require('cors');
+const app = express();
 const port = 5000;
 
 app.use(bodyParser.json());
 app.use(cors());
 
 const dataFile = 'responses.txt';
+
+const ageGroups = {
+    '0-10': { min: 0, max: 10 },
+    '11-15': { min: 11, max: 15 },
+    '16-21': { min: 16, max: 21 },
+    '22-30': { min: 22, max: 30 },
+    '31-40': { min: 31, max: 40 },
+    '41-50': { min: 41, max: 50 },
+    '55-70': { min: 55, max: 70 },
+    '71-infinity': { min: 71, max: Infinity }
+};
 
 // Save data for a user
 app.post('/api/responses', (req, res) => {
@@ -33,10 +44,7 @@ app.post('/api/comparisons', (req, res) => {
             return res.status(500).json({ error: err.message });
         }
 
-        const responses = data.trim().split('\n').map(line => {
-            const [name, resDateOfBirth, happiness, energy, hopefulness, hoursSlept, date] = line.split(',');
-            return { name, resDateOfBirth, happiness: parseInt(happiness), energy: parseInt(energy), hopefulness: parseInt(hopefulness), hoursSlept: parseFloat(hoursSlept), date };
-        });
+        const responses = parseFileContents(data);
 
         const userResponses = responses.filter(r => r.name === fullName && r.resDateOfBirth === dateOfBirth);
         const ageGroupResponses = responses.filter(r => r.resDateOfBirth === dateOfBirth);
@@ -48,7 +56,45 @@ app.post('/api/comparisons', (req, res) => {
     });
 });
 
-function getAverages(responses) {    
+// Get age group summary information
+app.get('/api/ageGroupSummary', (req, res) => {
+    fs.readFile(dataFile, 'utf8', (err, data) => {
+        if (err) {
+            return res.status(500).json({ error: err.message });
+        }
+
+        const responses = parseFileContents(data);
+        const ageGroupSummary = {};
+
+        Object.keys(ageGroups).forEach(group => {
+            const { min, max } = ageGroups[group];
+            const groupResponses = responses.filter(r => {
+                const age = getAge(r.resDateOfBirth);
+                return age >= min && age <= max;
+            });
+            ageGroupSummary[group] = getAverages(groupResponses);
+        });
+
+        res.json(ageGroupSummary);
+    });
+});
+
+function parseFileContents(data) {
+    return data.trim().split('\n').map(line => {
+        const [name, resDateOfBirth, happiness, energy, hopefulness, hoursSlept, date] = line.split(',');
+        return {
+            name,
+            resDateOfBirth,
+            happiness: parseInt(happiness),
+            energy: parseInt(energy),
+            hopefulness: parseInt(hopefulness),
+            hoursSlept: parseFloat(hoursSlept),
+            date
+        };
+    });
+}
+
+function getAverages(responses) {
     const averages = { happiness: 0, energy: 0, hopefulness: 0, hoursSlept: 0 };
 
     if (responses.length === 0) {
@@ -68,6 +114,21 @@ function getAverages(responses) {
     averages.hoursSlept /= responses.length;
 
     return averages;
+}
+
+function getAge(dateOfBirth) {
+    const birthDate = new Date(dateOfBirth);
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+
+    const isBirthdayThisYear = today.getMonth() === birthDate.getMonth() && today.getDate() < birthDate.getDate();
+    const isBeforeBirthMonthThisYear = today.getMonth() < birthDate.getMonth();
+
+    if (isBeforeBirthMonthThisYear || isBirthdayThisYear) {
+        age--;
+    }
+
+    return age;
 }
 
 app.listen(port, () => {

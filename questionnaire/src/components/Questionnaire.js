@@ -6,11 +6,12 @@ const port = 5000;
 const Questionnaire = () => {
     const [fullName, setFullName] = useState('');
     const [dateOfBirth, setDateOfBirth] = useState('');
-    const [happiness, setHappiness] = useState();
-    const [energy, setEnergy] = useState();
-    const [hopefulness, setHopefulness] = useState();
-    const [hoursSlept, setHoursSlept] = useState();
-    const [comparisonResults, setComparisonResults] = useState(null);    
+    const [happiness, setHappiness] = useState('');
+    const [energy, setEnergy] = useState('');
+    const [hopefulness, setHopefulness] = useState('');
+    const [hoursSlept, setHoursSlept] = useState('');
+    const [comparisonResults, setComparisonResults] = useState(null);
+    const [ageGroupSummary, setAgeGroupSummary] = useState(null);
 
     const handleSubmit = async (event) => {
         event.preventDefault();
@@ -23,12 +24,15 @@ const Questionnaire = () => {
             hoursSlept
         });
 
-        const comparisons = await axios.post('http://localhost:5000/api/comparisons', {
+        const comparisons = await axios.post(`http://localhost:${port}/api/comparisons`, {
             fullName,
             dateOfBirth
         });
 
         setComparisonResults(comparisons.data);
+
+        const ageGroupData = await axios.get(`http://localhost:${port}/api/ageGroupSummary`);
+        setAgeGroupSummary(ageGroupData.data);
     };
 
     return (
@@ -44,37 +48,50 @@ const Questionnaire = () => {
                 </div>
                 <div>
                     <label>On a scale from 1-5, how happy do you feel? </label>
-                    <input type="number" value={happiness} onChange={(e) => setHappiness(e.target.value)} />
+                    <input type="number" value={happiness} onChange={(e) => setHappiness(e.target.value)} min="1" max="5" />
                 </div>
                 <div>
                     <label>On a scale from 1-5, how energetic do you feel? </label>
-                    <input type="number" value={energy} onChange={(e) => setEnergy(e.target.value)} />
+                    <input type="number" value={energy} onChange={(e) => setEnergy(e.target.value)} min="1" max="5" />
                 </div>
                 <div>
                     <label>On a scale from 1-5, how hopeful do you feel about the future? </label>
-                    <input type="number" value={hopefulness} onChange={(e) => setHopefulness(e.target.value)} />
+                    <input type="number" value={hopefulness} onChange={(e) => setHopefulness(e.target.value)} min="1" max="5" />
                 </div>
                 <div>
                     <label>How many hours have you slept last night? </label>
-                    <input type="number" value={hoursSlept} onChange={(e) => setHoursSlept(e.target.value)} />
+                    <input type="number" value={hoursSlept} onChange={(e) => setHoursSlept(e.target.value)} min="0" max="24" />
                 </div>
                 <button type="submit">Submit</button>
             </form>
             {comparisonResults && (
                 <div>
                     <h2>Comparison Results</h2>
-                    
                     <p>Happiness today compared to your average happiness: {comparisonResults.userAverages.happiness}</p>
                     <p>Average happiness of people your age: {comparisonResults.ageGroupAverages.happiness}</p>
-                    
                     <p>Energy level today compared to your average energy level: {comparisonResults.userAverages.energy}</p>
                     <p>Average energy level of people your age: {comparisonResults.ageGroupAverages.energy}</p>
-
                     <p>Hopefulness today compared to your average hopefulness: {comparisonResults.userAverages.hopefulness}</p>
                     <p>Average hopefulness of people your age: {comparisonResults.ageGroupAverages.hopefulness}</p>
-
                     <p>Hours of sleep today compared to your average sleeping hours: {comparisonResults.userAverages.hoursSlept}</p>
                     <p>Average sleeping hours of people your age: {comparisonResults.ageGroupAverages.hoursSlept}</p>
+                </div>
+            )}            
+            {ageGroupSummary && (
+                <div>
+                    <h1 style={{ color: 'green' }}>Bonus Section</h1>
+                    <h2>Age Group Summary</h2>
+                    {Object.keys(ageGroupSummary).map((ageGroup, index) => (
+                        <div key={index} style={{ border: '1px solid black', padding: '5px', marginBottom: '5px' }}>
+                            <h3>
+                                <span style={{ textDecoration: 'underline' }}>Age Group {ageGroup}:</span>
+                            </h3>
+                            <p>Average happiness: {ageGroupSummary[ageGroup].happiness}</p>
+                            <p>Average energy: {ageGroupSummary[ageGroup].energy}</p>
+                            <p>Average hopefulness: {ageGroupSummary[ageGroup].hopefulness}</p>
+                            <p>Average hours slept: {ageGroupSummary[ageGroup].hoursSlept}</p>
+                        </div>
+                    ))}
                 </div>
             )}
         </div>
