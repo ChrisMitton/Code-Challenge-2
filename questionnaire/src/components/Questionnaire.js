@@ -44,19 +44,19 @@ const Questionnaire = () => {
                 </div>
                 <div>
                     <label>On a scale from 1-5, how happy do you feel? </label>
-                    <input type="number" value={happiness} onChange={(e) => setHappiness(e.target.value)} />
+                    <input type="number" value={happiness} onChange={(e) => setHappiness(e.target.value)} min="1" max="5" />
                 </div>
                 <div>
                     <label>On a scale from 1-5, how energetic do you feel? </label>
-                    <input type="number" value={energy} onChange={(e) => setEnergy(e.target.value)} />
+                    <input type="number" value={energy} onChange={(e) => setEnergy(e.target.value)} min="1" max="5" />
                 </div>
                 <div>
                     <label>On a scale from 1-5, how hopeful do you feel about the future? </label>
-                    <input type="number" value={hopefulness} onChange={(e) => setHopefulness(e.target.value)} />
+                    <input type="number" value={hopefulness} onChange={(e) => setHopefulness(e.target.value)} min="1" max="5" />
                 </div>
                 <div>
                     <label>How many hours have you slept last night? </label>
-                    <input type="number" value={hoursSlept} onChange={(e) => setHoursSlept(e.target.value)} />
+                    <input type="number" value={hoursSlept} onChange={(e) => setHoursSlept(e.target.value)} min="0" max="24" />
                 </div>
                 <button type="submit">Submit</button>
             </form>
