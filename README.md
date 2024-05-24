@@ -1,7 +1,7 @@
 # Christian Mitton's submission for DRL
 
 ## Part 1 - Theoretical Unter data model
-Question 1:
+### Question 1:
 - Considerations and Assumptions:
   - There can be multiple passengers in a ride, but only 1 person can give a rating
   - Drivers can have multiple shifts
@@ -42,7 +42,8 @@ Question 1:
     - ride length
     - trip cost
     - tip
-Question 2:
+
+### Question 2:
 - Considerations and Assumptions:
   - Using the same tables, but the passenger and ratings table would change.
   - Ratings would now be applicable to both driver and passanger.
